@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1580" height="1010" viewBox="0 0 1580 1010" role="img" aria-labelledby="title description">
+  <title id="title">ShopLedger order architecture</title>
+  <desc id="description">Checkout starts in public/js/app.js, passes through server.js and routes/orders.js, then uses inventory, coupon, pricing, ledger, and order modules. lib/store.js reads and writes data/db.json. A separate invoice request goes through server.js, reads the same file, finds the order, and returns printable HTML calculated by lib/invoice.js.</desc>
+  <defs>
+    <marker id="checkout-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 10 5 0 10Z" fill="#155d86"/>
+    </marker>
+    <marker id="invoice-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 10 5 0 10Z" fill="#21654e"/>
+    </marker>
+    <marker id="storage-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 10 5 0 10Z" fill="#514469"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #172b3d; }
+      .heading { font-size: 39px; font-weight: 700; }
+      .subtitle { font-size: 18px; fill: #43576a; }
+      .section { font-size: 20px; font-weight: 700; }
+      .module { font-family: Consolas, "Liberation Mono", monospace; font-size: 19px; font-weight: 700; }
+      .detail { font-size: 15px; fill: #43576a; }
+      .label { font-size: 14px; font-weight: 600; }
+      .checkout { fill: #155d86; }
+      .invoice { fill: #21654e; }
+      .storage { fill: #514469; }
+      .box { fill: #fff; stroke-width: 1.4; }
+      .checkout-box { stroke: #9dbed2; }
+      .invoice-box { stroke: #a7c8ba; }
+      .storage-box { stroke: #b8abc9; }
+      .edge { fill: none; stroke-width: 2; stroke-linejoin: round; }
+      .checkout-edge { stroke: #155d86; }
+      .invoice-edge { stroke: #21654e; }
+      .storage-edge { stroke: #514469; }
+    </style>
+  </defs>
+
+  <rect width="1580" height="1010" fill="#f8fafc"/>
+  <text class="heading" x="40" y="55">ShopLedger order architecture</text>
+  <text class="subtitle" x="42" y="84">How a sale is recorded and its printable invoice is generated</text>
+
+  <g aria-label="Checkout">
+    <rect x="40" y="108" width="934" height="634" rx="18" fill="#edf5fa" stroke="#d4e4ee"/>
+    <text class="section checkout" x="68" y="143">Checkout</text>
+
+    <rect class="box checkout-box" x="68" y="160" width="506" height="64" rx="9"/>
+    <text class="module" x="86" y="186">public/js/app.js</text>
+    <text class="detail" x="86" y="207">Place Order sends the cart, customer, payment mode, status, and coupon</text>
+
+    <path class="edge checkout-edge" d="M96 224V273" marker-end="url(#checkout-arrow)"/>
+    <text class="label checkout" x="109" y="254">POST /api/orders</text>
+    <path class="edge checkout-edge" d="M347 273V224" marker-end="url(#checkout-arrow)"/>
+    <text class="label checkout" x="360" y="254">201 JSON · order and total</text>
+
+    <rect class="box checkout-box" x="68" y="273" width="506" height="64" rx="9"/>
+    <text class="module" x="86" y="299">server.js</text>
+    <text class="detail" x="86" y="320">Parses JSON and mounts the order router under /api</text>
+
+    <path class="edge checkout-edge" d="M96 337V383" marker-end="url(#checkout-arrow)"/>
+    <text class="label checkout" x="109" y="365">Dispatch POST /orders</text>
+
+    <rect class="box checkout-box" x="68" y="383" width="351" height="77" rx="9"/>
+    <text class="module" x="86" y="410">routes/orders.js</text>
+    <text class="detail" x="86" y="432">Loads the data, coordinates the sale,</text>
+    <text class="detail" x="86" y="451">and sends the response after saving</text>
+
+    <path class="edge checkout-edge" d="M419 421H450V667"/>
+    <path class="edge checkout-edge" d="M450 421H668" marker-end="url(#checkout-arrow)"/>
+    <text class="label checkout" x="463" y="413">Find items · check and deduct</text>
+    <rect class="box checkout-box" x="668" y="383" width="278" height="76" rx="9"/>
+    <text class="module" x="684" y="410">lib/inventory.js</text>
+    <text class="detail" x="684" y="432">Checks sellable quantity and deducts</text>
+    <text class="detail" x="684" y="451">physical stock after approval</text>
+
+    <path class="edge checkout-edge" d="M450 510H668" marker-end="url(#checkout-arrow)"/>
+    <text class="label checkout" x="463" y="502">Calculate bill totals</text>
+    <rect class="box checkout-box" x="668" y="472" width="278" height="87" rx="9"/>
+    <text class="module" x="684" y="497">lib/pricing.js</text>
+    <text class="detail" x="684" y="519">Uses lib/coupons.js for the discount</text>
+    <text class="detail" x="684" y="539">and lib/tax.js for GST by item</text>
+
+    <path class="edge checkout-edge" d="M185 460V525" marker-end="url(#checkout-arrow)"/>
+    <text class="label checkout" x="198" y="497">Validate coupon</text>
+    <rect class="box checkout-box" x="160" y="525" width="259" height="62" rx="9"/>
+    <text class="module" x="176" y="550">lib/coupons.js</text>
+    <text class="detail" x="176" y="572">Checks the code and minimum spend</text>
+
+    <path class="edge checkout-edge" d="M450 595H668" marker-end="url(#checkout-arrow)"/>
+    <text class="label checkout" x="463" y="587">Check limit · charge khata</text>
+    <rect class="box checkout-box" x="668" y="572" width="278" height="62" rx="9"/>
+    <text class="module" x="684" y="597">lib/ledger.js</text>
+    <text class="detail" x="684" y="619">Adds the sale to the khata balance</text>
+
+    <path class="edge checkout-edge" d="M450 667H668" marker-end="url(#checkout-arrow)"/>
+    <text class="label checkout" x="463" y="659">Create order record</text>
+    <rect class="box checkout-box" x="668" y="647" width="278" height="62" rx="9"/>
+    <text class="module" x="684" y="672">lib/orders.js</text>
+    <text class="detail" x="684" y="694">Assigns an ID and stores bill totals</text>
+  </g>
+
+  <g aria-label="Printable invoice">
+    <rect x="994" y="108" width="546" height="634" rx="18" fill="#edf6f1" stroke="#d3e6db"/>
+    <text class="section invoice" x="1022" y="143">Printable invoice</text>
+
+    <rect class="box invoice-box" x="1022" y="160" width="490" height="64" rx="9"/>
+    <text class="module" x="1040" y="186">public/js/app.js</text>
+    <text class="detail" x="1040" y="207">Opens the invoice link for the saved order</text>
+
+    <path class="edge invoice-edge" d="M1050 224V273" marker-end="url(#invoice-arrow)"/>
+    <text class="label invoice" x="1063" y="254">GET /orders/:id/invoice</text>
+    <path class="edge invoice-edge" d="M1283 273V224" marker-end="url(#invoice-arrow)"/>
+    <text class="label invoice" x="1296" y="254">Printable HTML</text>
+
+    <rect class="box invoice-box" x="1022" y="273" width="490" height="64" rx="9"/>
+    <text class="module" x="1040" y="299">server.js</text>
+    <text class="detail" x="1040" y="320">Loads the saved data and sends the rendered invoice</text>
+
+    <path class="edge invoice-edge" d="M1050 337V773H962" marker-end="url(#invoice-arrow)"/>
+    <text class="label invoice" x="1063" y="726">Read saved data</text>
+
+    <path class="edge invoice-edge" d="M1130 337V421H1251" marker-end="url(#invoice-arrow)"/>
+    <text class="label invoice" x="1142" y="413">Find by order ID</text>
+    <rect class="box invoice-box" x="1251" y="383" width="261" height="76" rx="9"/>
+    <text class="module" x="1267" y="410">lib/orders.js</text>
+    <text class="detail" x="1267" y="432">Returns the stored order and lines</text>
+
+    <path class="edge invoice-edge" d="M1130 421V538H1251" marker-end="url(#invoice-arrow)"/>
+    <text class="label invoice" x="1142" y="530">Render order</text>
+    <rect class="box invoice-box" x="1251" y="498" width="261" height="108" rx="9"/>
+    <text class="module" x="1267" y="525">lib/invoice.js</text>
+    <text class="detail" x="1267" y="547">Recalculates tax and discounts</text>
+    <text class="detail" x="1267" y="567">from saved lines and config.js</text>
+    <text class="detail" x="1267" y="587">and formats the printable bill</text>
+  </g>
+
+  <g aria-label="Shared storage">
+    <path class="edge checkout-edge" d="M105 460V773H618" marker-end="url(#checkout-arrow)"/>
+    <text class="label checkout" x="170" y="762">Read data · append audit entry · write updated data</text>
+    <rect class="box storage-box" x="618" y="752" width="344" height="82" rx="10"/>
+    <text class="module storage" x="638" y="783">lib/store.js</text>
+    <text class="detail" x="638" y="809">Reads and writes the shared JSON file</text>
+
+    <path class="edge storage-edge" d="M650 834V903" marker-end="url(#storage-arrow)"/>
+    <text class="label storage" x="663" y="873">Write updated JSON</text>
+    <path class="edge storage-edge" d="M826 903V834" marker-end="url(#storage-arrow)"/>
+    <text class="label storage" x="839" y="873">Read saved JSON</text>
+    <rect class="box storage-box" x="618" y="903" width="344" height="72" rx="10"/>
+    <text class="module storage" x="638" y="932">data/db.json</text>
+    <text class="detail" x="638" y="955">Orders, stock, customers, settlements, and audit</text>
+  </g>
+</svg>
